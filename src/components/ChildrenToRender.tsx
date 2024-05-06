@@ -5,6 +5,7 @@ import { InstancedRigidBodies, InstancedRigidBodyProps, Physics, RapierRigidBody
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import { ObjectMap, useFrame } from "@react-three/fiber";
 import { Euler, Mesh } from "three";
+import Copter from "./Copter";
 
 type Props = {
 
@@ -41,7 +42,7 @@ const ChildrenToRender: FC<Props> = ({ }) => {
         }
     })
 
-    const { nodes }: ObjectMap = useGLTF("/models/land.glb");
+    const { nodes }: ObjectMap = useGLTF("/models/land.glb", true, true);
 
 
     const instances = useMemo(() => {
@@ -69,16 +70,9 @@ const ChildrenToRender: FC<Props> = ({ }) => {
 
         <Physics colliders={false} debug>
 
-            <RigidBody type="fixed" colliders="hull">
+            <RigidBody gravityScale={0} colliders={false}>
                 <mesh ref={land_ref} scale={[0.5, 0.5, 0.5]} geometry={nodes.land.geometry} position={[land_origin.x, land_origin.y, 0]} rotation={[0, 0, Math.PI * 0.5]} receiveShadow >
                     <meshBasicMaterial color={'olive'} />
-                </mesh>
-            </RigidBody>
-
-            <RigidBody colliders="hull" type="fixed">
-                <mesh scale={[0.2, 0.2, 0.2]}>
-                    <torusGeometry />
-                    <meshBasicMaterial color={'blue'} />
                 </mesh>
             </RigidBody>
 
@@ -88,7 +82,9 @@ const ChildrenToRender: FC<Props> = ({ }) => {
                     ref={rigidbodies}
                     colliders="cuboid"
                     gravityScale={0}
-                    onCollisionEnter={(el) => { el; el.rigidBody?.setTranslation(vec3({ x: el.rigidBody?.translation().x + 0.7, y: 0, z: 0 }), true) }}
+                    mass={100}
+                    type="fixed"
+                    onCollisionEnter={(el) => { el; el.rigidBody?.setGravityScale(1, true); el.rigidBody?.addTorque(vec3({x : 0, y: 1, z: 0}), true) }}
 
                 >
                     <instancedMesh args={[undefined, undefined, COUNT]} count={COUNT} castShadow>
@@ -97,6 +93,8 @@ const ChildrenToRender: FC<Props> = ({ }) => {
                     </instancedMesh>
                 </InstancedRigidBodies>
             </RigidBody>
+
+            <Copter />
 
         </Physics >
     </>)
